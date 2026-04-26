@@ -10,7 +10,7 @@ Integrationens backend henter nyheder server-side, filtrerer tydelige betalingsm
 - Små udbyderlogoer på hver artikel.
 - Gul breaking news-markering, når en artikel er markeret som breaking.
 - Automatisk skalering af tekst og logoer efter dashboardbredden plus en `scale`-indstilling.
-- Baggrund der følger Home Assistant-temaet eller kan tvinges til lys/mørk i kortets UI.
+- Baggrund og ramme der følger Home Assistant-temaet eller kan tvinges til lys/mørk i kortets UI.
 - Config flow i Home Assistant til valg af udbydere, antal artikler og opdateringsinterval.
 - Server-side hentning, så kortet ikke rammer browserens CORS-begrænsninger.
 - Korte overskrifter og resumeer i dashboardet.
@@ -53,6 +53,7 @@ providers:
 max_articles: 8
 scale: 1
 background_mode: theme
+frame_mode: theme
 show_summaries: true
 ```
 
@@ -82,6 +83,7 @@ providers:
 max_articles: 8
 scale: 1
 background_mode: theme
+frame_mode: theme
 show_summaries: true
 ```
 
@@ -143,6 +145,7 @@ Nyhedssites kan ændre feeds, HTML og betalingsmurmarkører uden varsel. Derfor 
 | `max_articles` | number | `8` | Maks. synlige overskrifter i kortet. |
 | `scale` | number | `1` | Grundskalering fra `0.75` til `1.35`; kortet autoskalerer også med dashboardbredden. |
 | `background_mode` | string | `theme` | Baggrund: `theme` følger Home Assistant-temaet, `light` tvinger lys, `dark` tvinger mørk. |
+| `frame_mode` | string | `theme` | Ramme omkring kortet: `theme` følger Home Assistant-temaet, `light` tvinger lys, `dark` tvinger mørk. |
 | `show_summaries` | boolean | `true` | Vis korte resumeer under overskrifter. |
 | `show_source_link` | boolean | `false` | Vis et eksternt kildelink i artikelvisningen. |
 | `compact` | boolean | `false` | Strammere layout. |

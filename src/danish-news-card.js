@@ -9,6 +9,7 @@ const DEFAULT_CONFIG = {
   max_articles: 8,
   scale: 1,
   background_mode: "theme",
+  frame_mode: "theme",
   show_summaries: true,
   show_source_link: false,
   compact: false
@@ -36,6 +37,7 @@ const CONFIG_LABELS = {
   max_articles: "Maks. overskrifter",
   scale: "Skalering",
   background_mode: "Baggrund",
+  frame_mode: "Ramme",
   show_summaries: "Vis korte resumeer",
   show_source_link: "Vis kildelink",
   compact: "Kompakt layout"
@@ -43,7 +45,8 @@ const CONFIG_LABELS = {
 const CONFIG_HELPERS = {
   providers: "Vælg de medier kortet må vise. Selve dashboardkortet viser kun nyhedsoverblikket.",
   scale: "Justér grundskaleringen. Kortet skalerer også automatisk efter dashboard-kolonnens bredde.",
-  background_mode: "Tema bruger Home Assistants aktuelle farver. Lys og mørk tvinger kortets egen baggrund."
+  background_mode: "Tema bruger Home Assistants aktuelle farver. Lys og mørk tvinger kortets egen baggrund.",
+  frame_mode: "Tema bruger Home Assistants kort-ramme. Lys og mørk tvinger selve rammen omkring kortet."
 };
 
 class DanishNewsCard extends HTMLElement {
@@ -76,7 +79,8 @@ class DanishNewsCard extends HTMLElement {
       providers,
       max_articles: clampNumber(Number(config.max_articles) || DEFAULT_CONFIG.max_articles, 1, 40),
       scale: clampNumber(Number(config.scale) || DEFAULT_CONFIG.scale, 0.75, 1.35),
-      background_mode: normalizeBackgroundMode(config.background_mode)
+      background_mode: normalizeThemeMode(config.background_mode, "background_mode"),
+      frame_mode: normalizeThemeMode(config.frame_mode, "frame_mode")
     };
     this._article = undefined;
     this._articleError = "";
@@ -104,6 +108,7 @@ class DanishNewsCard extends HTMLElement {
       max_articles: 8,
       scale: 1,
       background_mode: "theme",
+      frame_mode: "theme",
       show_summaries: true
     };
   }
@@ -155,6 +160,15 @@ class DanishNewsCard extends HTMLElement {
           }
         },
         {
+          name: "frame_mode",
+          selector: {
+            select: {
+              mode: "dropdown",
+              options: BACKGROUND_OPTIONS
+            }
+          }
+        },
+        {
           type: "grid",
           name: "",
           flatten: true,
@@ -193,13 +207,14 @@ class DanishNewsCard extends HTMLElement {
     const updatedAt = sensor?.attributes?.updated_at || "";
     const status = this._statusText(sensor, articles, updatedAt);
     const scale = this._config.scale;
-    const backgroundMode = normalizeBackgroundMode(this._config.background_mode);
+    const backgroundMode = normalizeThemeMode(this._config.background_mode, "background_mode");
+    const frameMode = normalizeThemeMode(this._config.frame_mode, "frame_mode");
     const minFont = (11.5 * scale).toFixed(2);
     const maxFont = (16 * scale).toFixed(2);
 
     this.shadowRoot.innerHTML = `
       <style>${this._styles()}</style>
-      <ha-card>
+      <ha-card class="frame-${escapeAttr(frameMode)}">
         <div class="card background-${escapeAttr(backgroundMode)} ${this._config.compact ? "compact" : ""}" style="--news-min-font:${minFont}px;--news-max-font:${maxFont}px;">
           <header class="header">
             <div class="title-block">
@@ -472,7 +487,37 @@ class DanishNewsCard extends HTMLElement {
       }
 
       ha-card {
+        --news-frame-radius: var(--ha-card-border-radius, 12px);
+        --news-frame-bg: var(--ha-card-background, var(--card-background-color, #fff));
+        --news-frame-border: var(--ha-card-border-color, var(--divider-color, rgba(126, 138, 150, 0.24)));
+        --news-frame-shadow: var(--ha-card-box-shadow, none);
+        background: var(--news-frame-bg);
+        border: var(--ha-card-border-width, 1px) solid var(--news-frame-border);
+        border-radius: var(--news-frame-radius);
+        box-shadow: var(--news-frame-shadow);
         overflow: hidden;
+        padding: 0;
+      }
+
+      ha-card.frame-light {
+        --news-frame-bg: #ffffff;
+        --news-frame-border: rgba(114, 128, 144, 0.34);
+        --news-frame-shadow: 0 10px 28px rgba(20, 31, 42, 0.12);
+        border-width: 1px;
+        padding: 2px;
+      }
+
+      ha-card.frame-dark {
+        --news-frame-bg: #0b1220;
+        --news-frame-border: rgba(148, 163, 184, 0.34);
+        --news-frame-shadow: 0 12px 30px rgba(0, 0, 0, 0.34);
+        border-width: 1px;
+        padding: 2px;
+      }
+
+      ha-card.frame-light .card,
+      ha-card.frame-dark .card {
+        border-radius: calc(var(--news-frame-radius) - 2px);
       }
 
       .card {
@@ -827,8 +872,8 @@ function normalizeProviders(value) {
   return providers.length ? [...new Set(providers)] : [...DEFAULT_CONFIG.providers];
 }
 
-function normalizeBackgroundMode(value) {
-  return BACKGROUND_OPTIONS.some((option) => option.value === value) ? value : DEFAULT_CONFIG.background_mode;
+function normalizeThemeMode(value, key) {
+  return BACKGROUND_OPTIONS.some((option) => option.value === value) ? value : DEFAULT_CONFIG[key];
 }
 
 function timestamp(value) {
