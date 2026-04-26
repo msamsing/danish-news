@@ -17,6 +17,43 @@ Integrationens backend henter nyheder server-side, filtrerer tydelige betalingsm
 - Best-effort filtrering af artikler med betalingsmur. Integrationens mål er gratis artikler, ikke omgåelse af login eller abonnement.
 - Bundlet Lovelace-resource på `/danish_news/danish-news-card.js`.
 
+## Installer via HACS custom repository
+
+1. Åbn HACS i Home Assistant.
+2. Gå til **Custom repositories**.
+3. Tilføj repository URL:
+
+```text
+https://github.com/msamsing/danish-news
+```
+
+4. Vælg category **Integration**.
+5. Download **Danske nyheder**.
+6. Genstart Home Assistant.
+7. Gå til **Indstillinger → Enheder og tjenester → Tilføj integration**.
+8. Søg efter **Danske nyheder** og vælg udbydere.
+9. Tilføj dashboard resource:
+
+```yaml
+url: /danish_news/danish-news-card.js
+type: module
+```
+
+10. Tilføj kortet til dit dashboard:
+
+```yaml
+type: custom:danish-news-card
+title: Dagens nyheder
+providers:
+  - tv2
+  - dr
+  - eb
+  - bt
+max_articles: 8
+scale: 1
+show_summaries: true
+```
+
 ## Installer manuelt
 
 1. Kopiér mappen `custom_components/danish_news` til din Home Assistant `config/custom_components/danish_news`.

@@ -2,7 +2,7 @@
   "domain": "danish_news",
   "name": "Danske nyheder",
   "after_dependencies": ["frontend"],
-  "codeowners": [],
+  "codeowners": ["@msamsing"],
   "config_flow": true,
   "documentation": "https://github.com/msamsing/danish-news",
   "iot_class": "cloud_polling",
