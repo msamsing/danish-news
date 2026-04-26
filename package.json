@@ -1,0 +1,27 @@
+{
+  "name": "danish-news-homeassistant",
+  "version": "0.1.0",
+  "description": "A Home Assistant custom integration and Lovelace card for Danish news headlines.",
+  "type": "module",
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "check": "node --check src/danish-news-card.js && node --check scripts/build.mjs"
+  },
+  "keywords": [
+    "home-assistant",
+    "lovelace",
+    "news",
+    "rss",
+    "denmark",
+    "danish"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/msamsing/danish-news.git"
+  },
+  "bugs": {
+    "url": "https://github.com/msamsing/danish-news/issues"
+  },
+  "homepage": "https://github.com/msamsing/danish-news#readme",
+  "license": "MIT"
+}

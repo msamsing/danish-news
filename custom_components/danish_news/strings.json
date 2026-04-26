@@ -1,0 +1,33 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Danske nyheder",
+        "description": "Hent dagens gratis nyheder fra danske medier til Home Assistant.",
+        "data": {
+          "providers": "Nyhedsudbydere",
+          "max_articles": "Maks. artikler pr. udbyder",
+          "refresh_minutes": "Opdateringsinterval i minutter"
+        }
+      }
+    },
+    "error": {
+      "no_providers": "Vælg mindst en nyhedsudbyder."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Danske nyheder",
+        "data": {
+          "providers": "Nyhedsudbydere",
+          "max_articles": "Maks. artikler pr. udbyder",
+          "refresh_minutes": "Opdateringsinterval i minutter"
+        }
+      }
+    },
+    "error": {
+      "no_providers": "Vælg mindst en nyhedsudbyder."
+    }
+  }
+}
