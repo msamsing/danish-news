@@ -26,8 +26,13 @@ const PROVIDER_OPTIONS = Object.entries(PROVIDERS)
   .map(([value, provider]) => ({ value, label: provider.name }));
 const BACKGROUND_OPTIONS = [
   { value: "theme", label: "Følg Home Assistant-tema" },
-  { value: "light", label: "Lys" },
-  { value: "dark", label: "Mørk" }
+  { value: "light", label: "Lys baggrund / mørk tekst" },
+  { value: "dark", label: "Sort baggrund / hvid tekst" }
+];
+const FRAME_OPTIONS = [
+  { value: "theme", label: "Følg Home Assistant-tema" },
+  { value: "light", label: "Lys ramme" },
+  { value: "dark", label: "Sort ramme" }
 ];
 
 const CONFIG_LABELS = {
@@ -45,8 +50,8 @@ const CONFIG_LABELS = {
 const CONFIG_HELPERS = {
   providers: "Vælg de medier kortet må vise. Selve dashboardkortet viser kun nyhedsoverblikket.",
   scale: "Justér grundskaleringen. Kortet skalerer også automatisk efter dashboard-kolonnens bredde.",
-  background_mode: "Tema bruger Home Assistants aktuelle farver. Lys og mørk tvinger kortets egen baggrund.",
-  frame_mode: "Tema bruger Home Assistants kort-ramme. Lys og mørk tvinger selve rammen omkring kortet."
+  background_mode: "Tema bruger Home Assistants aktuelle farver. Sort baggrund giver hvid tekst i hele nyhedsoverblikket.",
+  frame_mode: "Tema bruger Home Assistants kort-ramme. Lys og sort tvinger selve rammen omkring kortet."
 };
 
 class DanishNewsCard extends HTMLElement {
@@ -164,7 +169,7 @@ class DanishNewsCard extends HTMLElement {
           selector: {
             select: {
               mode: "dropdown",
-              options: BACKGROUND_OPTIONS
+              options: FRAME_OPTIONS
             }
           }
         },
@@ -508,9 +513,9 @@ class DanishNewsCard extends HTMLElement {
       }
 
       ha-card.frame-dark {
-        --news-frame-bg: #0b1220;
-        --news-frame-border: rgba(148, 163, 184, 0.34);
-        --news-frame-shadow: 0 12px 30px rgba(0, 0, 0, 0.34);
+        --news-frame-bg: #000000;
+        --news-frame-border: rgba(255, 255, 255, 0.34);
+        --news-frame-shadow: 0 12px 30px rgba(0, 0, 0, 0.48);
         border-width: 1px;
         padding: 2px;
       }
@@ -549,14 +554,14 @@ class DanishNewsCard extends HTMLElement {
       }
 
       .card.background-dark {
-        --news-bg: #111827;
-        --news-panel-bg: #1f2937;
-        --news-control-bg: #172033;
-        --news-hover-bg: #263244;
-        --news-text: #f8fafc;
-        --news-muted: #cbd5e1;
-        --news-border: rgba(148, 163, 184, 0.24);
-        --news-strong-border: rgba(148, 163, 184, 0.34);
+        --news-bg: #000000;
+        --news-panel-bg: #050505;
+        --news-control-bg: #111111;
+        --news-hover-bg: #1a1a1a;
+        --news-text: #ffffff;
+        --news-muted: #ffffff;
+        --news-border: rgba(255, 255, 255, 0.24);
+        --news-strong-border: rgba(255, 255, 255, 0.34);
       }
 
       .card.compact {
