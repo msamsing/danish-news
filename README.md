@@ -146,9 +146,9 @@ Nyhedssites kan ændre feeds, HTML og betalingsmurmarkører uden varsel. Derfor 
 | `scale` | number | `1` | Grundskalering fra `0.75` til `1.35`; kortet autoskalerer også med dashboardbredden. |
 | `background_mode` | string | `theme` | Baggrund: `theme` følger Home Assistant-temaet, `light` tvinger lys, `dark` tvinger sort baggrund med hvid tekst. |
 | `frame_mode` | string | `theme` | Ramme omkring kortet: `theme` følger Home Assistant-temaet, `light` tvinger lys ramme, `dark` tvinger sort ramme. |
-| `show_summaries` | boolean | `true` | Vis korte resumeer under overskrifter. |
-| `show_source_link` | boolean | `false` | Vis et eksternt kildelink i artikelvisningen. |
-| `compact` | boolean | `false` | Strammere layout. |
+| `show_summaries` | boolean | `true` | Vis korte resumeer i overblikket og artikelvisningen, når udbyderen leverer et resume. |
+| `show_source_link` | boolean | `false` | Vis et eksternt kildelink i både overblik og artikelvisning. |
+| `compact` | boolean | `false` | Strammere layout med mindre afstand, lavere artikelrækker og mindre metadata. |
 
 ## Bemærkninger
 
