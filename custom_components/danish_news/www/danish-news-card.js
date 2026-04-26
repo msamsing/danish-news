@@ -12,6 +12,7 @@ const DEFAULT_CONFIG = {
   providers: ["tv2", "dr", "eb", "bt"],
   max_articles: 8,
   scale: 1,
+  background_mode: "theme",
   show_summaries: true,
   show_source_link: false,
   compact: false
@@ -26,6 +27,11 @@ const PROVIDERS = {
 
 const PROVIDER_OPTIONS = Object.entries(PROVIDERS)
   .map(([value, provider]) => ({ value, label: provider.name }));
+const BACKGROUND_OPTIONS = [
+  { value: "theme", label: "Følg Home Assistant-tema" },
+  { value: "light", label: "Lys" },
+  { value: "dark", label: "Mørk" }
+];
 
 const CONFIG_LABELS = {
   title: "Titel",
@@ -33,13 +39,15 @@ const CONFIG_LABELS = {
   providers: "Udbydere i kortet",
   max_articles: "Maks. overskrifter",
   scale: "Skalering",
+  background_mode: "Baggrund",
   show_summaries: "Vis korte resumeer",
   show_source_link: "Vis kildelink",
   compact: "Kompakt layout"
 };
 const CONFIG_HELPERS = {
   providers: "Vælg de medier kortet må vise. Selve dashboardkortet viser kun nyhedsoverblikket.",
-  scale: "Justér grundskaleringen. Kortet skalerer også automatisk efter dashboard-kolonnens bredde."
+  scale: "Justér grundskaleringen. Kortet skalerer også automatisk efter dashboard-kolonnens bredde.",
+  background_mode: "Tema bruger Home Assistants aktuelle farver. Lys og mørk tvinger kortets egen baggrund."
 };
 
 class DanishNewsCard extends HTMLElement {
@@ -71,7 +79,8 @@ class DanishNewsCard extends HTMLElement {
       ...config,
       providers,
       max_articles: clampNumber(Number(config.max_articles) || DEFAULT_CONFIG.max_articles, 1, 40),
-      scale: clampNumber(Number(config.scale) || DEFAULT_CONFIG.scale, 0.75, 1.35)
+      scale: clampNumber(Number(config.scale) || DEFAULT_CONFIG.scale, 0.75, 1.35),
+      background_mode: normalizeBackgroundMode(config.background_mode)
     };
     this._article = undefined;
     this._articleError = "";
@@ -98,6 +107,7 @@ class DanishNewsCard extends HTMLElement {
       providers: ["tv2", "dr", "eb", "bt"],
       max_articles: 8,
       scale: 1,
+      background_mode: "theme",
       show_summaries: true
     };
   }
@@ -140,6 +150,15 @@ class DanishNewsCard extends HTMLElement {
           }
         },
         {
+          name: "background_mode",
+          selector: {
+            select: {
+              mode: "dropdown",
+              options: BACKGROUND_OPTIONS
+            }
+          }
+        },
+        {
           type: "grid",
           name: "",
           flatten: true,
@@ -178,13 +197,14 @@ class DanishNewsCard extends HTMLElement {
     const updatedAt = sensor?.attributes?.updated_at || "";
     const status = this._statusText(sensor, articles, updatedAt);
     const scale = this._config.scale;
+    const backgroundMode = normalizeBackgroundMode(this._config.background_mode);
     const minFont = (11.5 * scale).toFixed(2);
     const maxFont = (16 * scale).toFixed(2);
 
     this.shadowRoot.innerHTML = `
       <style>${this._styles()}</style>
       <ha-card>
-        <div class="card ${this._config.compact ? "compact" : ""}" style="--news-min-font:${minFont}px;--news-max-font:${maxFont}px;">
+        <div class="card background-${escapeAttr(backgroundMode)} ${this._config.compact ? "compact" : ""}" style="--news-min-font:${minFont}px;--news-max-font:${maxFont}px;">
           <header class="header">
             <div class="title-block">
               <h2>${escapeHtml(this._config.title)}</h2>
@@ -461,13 +481,41 @@ class DanishNewsCard extends HTMLElement {
 
       .card {
         --news-card-radius: 8px;
-        background:
-          linear-gradient(180deg, rgba(255, 255, 255, 0.96), rgba(247, 249, 250, 0.98)),
-          var(--card-background-color, #fff);
-        color: var(--primary-text-color, #1f2328);
+        --news-bg: var(--ha-card-background, var(--card-background-color, #fff));
+        --news-panel-bg: color-mix(in srgb, var(--news-bg) 86%, var(--secondary-background-color, #f1f4f6));
+        --news-control-bg: var(--secondary-background-color, #f2f4f6);
+        --news-hover-bg: color-mix(in srgb, var(--news-control-bg) 72%, var(--news-bg));
+        --news-text: var(--primary-text-color, #1f2328);
+        --news-muted: var(--secondary-text-color, #66717e);
+        --news-border: var(--divider-color, rgba(126, 138, 150, 0.24));
+        --news-strong-border: var(--divider-color, rgba(126, 138, 150, 0.28));
+        background: var(--news-bg);
+        color: var(--news-text);
         container-type: inline-size;
         font-size: clamp(var(--news-min-font), 3.15cqi, var(--news-max-font));
         padding: clamp(12px, 4cqi, 20px);
+      }
+
+      .card.background-light {
+        --news-bg: #ffffff;
+        --news-panel-bg: #f8fafc;
+        --news-control-bg: #f2f5f8;
+        --news-hover-bg: #edf2f7;
+        --news-text: #1f2328;
+        --news-muted: #5f6b7a;
+        --news-border: rgba(114, 128, 144, 0.24);
+        --news-strong-border: rgba(114, 128, 144, 0.32);
+      }
+
+      .card.background-dark {
+        --news-bg: #111827;
+        --news-panel-bg: #1f2937;
+        --news-control-bg: #172033;
+        --news-hover-bg: #263244;
+        --news-text: #f8fafc;
+        --news-muted: #cbd5e1;
+        --news-border: rgba(148, 163, 184, 0.24);
+        --news-strong-border: rgba(148, 163, 184, 0.34);
       }
 
       .card.compact {
@@ -505,7 +553,7 @@ class DanishNewsCard extends HTMLElement {
       }
 
       .header p {
-        color: var(--secondary-text-color, #66717e);
+        color: var(--news-muted);
         font-size: 0.9em;
         line-height: 1.35;
         margin-top: 0.25em;
@@ -520,8 +568,8 @@ class DanishNewsCard extends HTMLElement {
 
       .icon-button {
         align-items: center;
-        background: var(--secondary-background-color, #f2f4f6);
-        border: 1px solid var(--divider-color, rgba(126, 138, 150, 0.28));
+        background: var(--news-control-bg);
+        border: 1px solid var(--news-strong-border);
         border-radius: var(--news-card-radius);
         display: inline-flex;
         flex: 0 0 auto;
@@ -533,7 +581,7 @@ class DanishNewsCard extends HTMLElement {
 
       .icon-button ha-icon {
         --mdc-icon-size: 1.35em;
-        color: var(--secondary-text-color, #66717e);
+        color: var(--news-muted);
       }
 
       .article-list {
@@ -542,8 +590,8 @@ class DanishNewsCard extends HTMLElement {
       }
 
       .article-button {
-        background: color-mix(in srgb, var(--card-background-color, #fff) 86%, var(--secondary-background-color, #f1f4f6));
-        border: 1px solid var(--divider-color, rgba(126, 138, 150, 0.24));
+        background: var(--news-panel-bg);
+        border: 1px solid var(--news-border);
         border-left: 0.32em solid var(--provider-accent);
         border-radius: var(--news-card-radius);
         display: grid;
@@ -557,19 +605,25 @@ class DanishNewsCard extends HTMLElement {
       .article-button.breaking {
         background: linear-gradient(90deg, #fff2a8, #fff8d5);
         border-color: #e4bc00;
+        color: #2c2100;
         box-shadow: inset 0 0 0 1px rgba(171, 129, 0, 0.08);
+      }
+
+      .article-button.breaking .source-row,
+      .article-button.breaking p {
+        color: #61510f;
       }
 
       .article-button:hover,
       .icon-button:hover,
       .back-button:hover {
-        background: color-mix(in srgb, var(--secondary-background-color, #f2f4f6) 72%, var(--card-background-color, #fff));
+        background: var(--news-hover-bg);
       }
 
       .source-row,
       .article-heading {
         align-items: center;
-        color: var(--secondary-text-color, #66717e);
+        color: var(--news-muted);
         display: flex;
         flex-wrap: wrap;
         gap: 0.55em;
@@ -625,8 +679,8 @@ class DanishNewsCard extends HTMLElement {
       }
 
       .logo-fallback {
-        background: var(--secondary-background-color, #f4f6f8);
-        color: var(--primary-text-color, #1f2328);
+        background: var(--news-control-bg);
+        color: var(--news-text);
       }
 
       .breaking-label {
@@ -649,7 +703,7 @@ class DanishNewsCard extends HTMLElement {
       }
 
       .article-button p {
-        color: var(--secondary-text-color, #66717e);
+        color: var(--news-muted);
         font-size: 0.86em;
         line-height: 1.35;
       }
@@ -663,13 +717,20 @@ class DanishNewsCard extends HTMLElement {
         background: linear-gradient(180deg, #fff7c7, rgba(255, 247, 199, 0.28));
         border: 1px solid #e4bc00;
         border-radius: var(--news-card-radius);
+        color: #2c2100;
         padding: 0.85em;
+      }
+
+      .article-view.breaking .article-heading,
+      .article-view.breaking .lead,
+      .article-view.breaking .byline {
+        color: #61510f;
       }
 
       .back-button {
         align-items: center;
-        background: var(--secondary-background-color, #f2f4f6);
-        border: 1px solid var(--divider-color, rgba(126, 138, 150, 0.28));
+        background: var(--news-control-bg);
+        border: 1px solid var(--news-strong-border);
         border-radius: var(--news-card-radius);
         display: inline-flex;
         gap: 0.55em;
@@ -690,19 +751,19 @@ class DanishNewsCard extends HTMLElement {
       }
 
       .lead {
-        color: var(--secondary-text-color, #66717e);
+        color: var(--news-muted);
         font-size: 0.96em;
         font-weight: 560;
         line-height: 1.42;
       }
 
       .byline {
-        color: var(--secondary-text-color, #66717e);
+        color: var(--news-muted);
         font-size: 0.82em;
       }
 
       .article-body {
-        border-top: 1px solid var(--divider-color, rgba(126, 138, 150, 0.22));
+        border-top: 1px solid var(--news-border);
         display: grid;
         gap: 0.7em;
         padding-top: 0.85em;
@@ -716,10 +777,10 @@ class DanishNewsCard extends HTMLElement {
       .inline-message,
       .empty-state {
         align-items: center;
-        background: var(--secondary-background-color, #f4f6f8);
-        border: 1px solid var(--divider-color, rgba(126, 138, 150, 0.24));
+        background: var(--news-control-bg);
+        border: 1px solid var(--news-border);
         border-radius: var(--news-card-radius);
-        color: var(--secondary-text-color, #66717e);
+        color: var(--news-muted);
         display: flex;
         gap: 0.72em;
         line-height: 1.4;
@@ -768,6 +829,10 @@ function normalizeProviders(value) {
 
   const providers = value.filter((provider) => provider in PROVIDERS);
   return providers.length ? [...new Set(providers)] : [...DEFAULT_CONFIG.providers];
+}
+
+function normalizeBackgroundMode(value) {
+  return BACKGROUND_OPTIONS.some((option) => option.value === value) ? value : DEFAULT_CONFIG.background_mode;
 }
 
 function timestamp(value) {
